@@ -285,15 +285,13 @@ def get_all_appointments(
 @router.get("/appointments/today_date")
 def get_today_appointments(numm: int, session: sess):
     from sqlalchemy import select
-    
+    from datetime import date, datetime
+
     today = date.today()
-    print(f"Today's date: {today}")
-    print(f"Numm parameter: {numm}")
-    
-    # Join all three tables correctly
+
     query = select(
-        Appointments, 
-        Patients.name, 
+        Appointments,
+        Patients.name,
         Doctors.name,
         Patients.phone_number,
         Patients.email
@@ -302,59 +300,48 @@ def get_today_appointments(numm: int, session: sess):
     ).join(
         Doctors, Appointments.doctor_id == Doctors.d_id
     )
-    
+
     results = session.exec(query).all()
-    print(f"Total results from query: {len(results)}")
-    
+
     filtered_appointments = []
-    
+
     for appt, patient_name, doctor_name, patient_phone, patient_email in results:
-        print(f"\nProcessing appointment ID: {appt.a_id}")
-        print(f"Appointment date type: {type(appt.date)}")
-        print(f"Appointment date value: {appt.date}")
-        print(f"Patient: {patient_name}, Doctor: {doctor_name}")
-        
-        # appt.date is already a date object (based on the error)
-        appt_date = appt.date
-        
+        # 🔹 Convert string date from DB to date object
+        appt_date = datetime.strptime(appt.date, "%Y-%m-%d").date()
+
         should_include = False
-        
-        if numm == 1:  # Past appointments
+
+        if numm == 1:          # Past
             if appt_date < today:
                 should_include = True
-                print(f"PAST: {appt_date} < {today} = {appt_date < today}")
-        elif numm == 2:  # Today's appointments
+
+        elif numm == 2:        # Today
             if appt_date == today:
                 should_include = True
-                print(f"TODAY: {appt_date} == {today} = {appt_date == today}")
-        elif numm == 3:  # Upcoming appointments
+
+        elif numm == 3:        # Upcoming
             if appt_date > today:
                 should_include = True
-                print(f"UPCOMING: {appt_date} > {today} = {appt_date > today}")
-        else:  # Invalid numm, return all
+
+        else:                  # All
             should_include = True
-            print(f"ALL: including all appointments")
-        
+
         if should_include:
-            appointment_data = {
+            filtered_appointments.append({
                 "appointment_id": appt.a_id,
                 "patient_id": appt.patient_id,
                 "doctor_id": appt.doctor_id,
-                "date": appt_date.isoformat() if hasattr(appt_date, 'isoformat') else str(appt_date),
+                "date": appt.date,   # keep original string
                 "time": appt.time,
                 "status": appt.status,
                 "patient_name": patient_name,
                 "doctor_name": doctor_name,
                 "patient_phone": patient_phone,
                 "email": patient_email
-            }
-            filtered_appointments.append(appointment_data)
-            print(f"✓ Included appointment ID: {appt.a_id}")
-        else:
-            print(f"✗ Excluded appointment ID: {appt.a_id}")
-    
-    print(f"\nTotal filtered appointments: {len(filtered_appointments)}")
+            })
+
     return filtered_appointments
+
 #later it should beimplmented on the basis of today,upcomig,completed
 #create doctor
 @router.post("/doctor")

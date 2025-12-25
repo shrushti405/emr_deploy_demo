@@ -27,7 +27,8 @@ def create_app():
         CORSMiddleware,
         allow_origins=[
             "http://localhost:3000",  # React
-            "http://127.0.0.1:3000"
+            "http://127.0.0.1:3000",
+            "https://shrushti405.github.io/EmrApp/"
         ],
         allow_credentials=True,
         allow_methods=["*"],

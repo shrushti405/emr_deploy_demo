@@ -22,7 +22,7 @@ def create_app():
         lifespan=lifespan
     )
 
-    # ✅ CORS
+    # ✅ CORS middleware - ADDED
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
@@ -34,11 +34,16 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    # ✅ OPTIONS handler - ADD THIS LINE
+    @app.options("/{_:path}")
+    async def handle_all_options():
+        return {"message": "OK"}
 
+    # Your existing routes
     app.include_router(
         appointment_service.router,
         prefix=""
     )
 
     return app
-

@@ -25,20 +25,16 @@ def create_app():
     # ✅ CORS middleware - ADDED
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost:3000",  # React
-            "http://127.0.0.1:3000",
-            "https://shrushti405.github.io/EmrApp/"
-        ],
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
     
-    # ✅ OPTIONS handler - ADD THIS LINE
-    @app.options("/{_:path}")
-    async def handle_all_options():
-        return {"message": "OK"}
+    # # ✅ OPTIONS handler - ADD THIS LINE
+    # @app.options("/{_:path}")
+    # async def handle_all_options():
+    #     return {"message": "OK"}
 
     # Your existing routes
     app.include_router(
